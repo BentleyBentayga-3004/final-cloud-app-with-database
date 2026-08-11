@@ -94,7 +94,34 @@ class Enrollment(models.Model):
     mode = models.CharField(max_length=5, choices=COURSE_MODES, default=AUDIT)
     rating = models.FloatField(default=5.0)
 
+# Model lưu trữ nội dung câu hỏi
+class Question(models.Model):
+    # Liên kết với bảng Course (Khi khóa học bị xóa, các câu hỏi cũng bị xóa theo - CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    question_text = models.CharField(max_length=200)
+    grade = models.IntegerField(default=5)
 
+    def __str__(self):
+        return self.question_text
+
+# Model lưu trữ các lựa chọn (đáp án) cho từng câu hỏi
+class Choice(models.Model):
+    # Liên kết với bảng Question
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice_text = models.CharField(max_length=200)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.choice_text
+
+# Model lưu trữ bài nộp của học viên
+class Submission(models.Model):
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+    # Sử dụng ManyToManyField vì một bài thi sẽ có nhiều lựa chọn (đáp án) được đánh dấu
+    choices = models.ManyToManyField(Choice)
+
+    def __str__(self):
+        return f"Enrollment: {self.enrollment.id} - Submission: {self.id}"
 # <HINT> Create a Question Model with:
     # Used to persist question content for a course
     # Has a One-To-Many (or Many-To-Many if you want to reuse questions) relationship with course
